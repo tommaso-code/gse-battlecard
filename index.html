@@ -1,0 +1,433 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Global Sports Experiences — Competitive Battlecard</title>
+<style>
+  :root{
+    --bg-primary:#0a0d14; --bg-elevated:#0f131c; --bg-surface:#161b28; --bg-hover:#1e2536;
+    --border:rgba(255,255,255,.08); --border-strong:rgba(255,255,255,.16);
+    --text-primary:#fff; --text-secondary:rgba(255,255,255,.72); --text-muted:rgba(255,255,255,.48);
+    --accent:#f59e0b; --accent-hover:#d97706; --accent-soft:rgba(245,158,11,.14);
+    --you:#10b981; --they:#ef4444; --tie:#f59e0b;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+    background:var(--bg-primary);color:var(--text-primary);line-height:1.55;-webkit-font-smoothing:antialiased}
+  .wrap{max-width:1220px;margin:0 auto;padding:0 20px 80px}
+  header.top{padding:38px 0 26px;border-bottom:1px solid var(--border)}
+  .eyebrow{color:var(--accent);font-weight:700;font-size:12px;letter-spacing:.14em;text-transform:uppercase}
+  h1{font-size:30px;font-weight:800;margin:8px 0 6px;letter-spacing:-.02em}
+  .meta{color:var(--text-muted);font-size:13px}
+  .meta strong{color:var(--text-secondary);font-weight:600}
+  nav.tabs{display:flex;flex-wrap:wrap;gap:8px;position:sticky;top:0;z-index:20;
+    background:var(--bg-primary);padding:16px 0;border-bottom:1px solid var(--border)}
+  .tab{background:var(--bg-surface);color:var(--text-secondary);border:1px solid var(--border);
+    padding:9px 15px;border-radius:9px;font-size:13.5px;font-weight:600;cursor:pointer;transition:.18s;white-space:nowrap}
+  .tab:hover{background:var(--bg-hover);color:var(--text-primary)}
+  .tab.active{background:var(--accent);color:#111;border-color:var(--accent)}
+  .tab.you{border-color:rgba(16,185,129,.4)}
+  .tab.you.active{background:var(--you);border-color:var(--you);color:#062a1e}
+  section.tab-content{display:none;padding-top:26px;animation:fade .25s ease}
+  section.tab-content.active{display:block}
+  @keyframes fade{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
+  h2{font-size:21px;font-weight:750;margin:6px 0 4px;letter-spacing:-.01em}
+  h3{font-size:15px;font-weight:700;margin:0 0 10px;color:var(--text-primary)}
+  .sub{color:var(--text-muted);font-size:13.5px;margin-bottom:20px}
+  .grid{display:grid;gap:16px}
+  .g2{grid-template-columns:1fr 1fr}
+  @media(max-width:820px){.g2{grid-template-columns:1fr}}
+  .card{background:var(--bg-surface);border:1px solid var(--border);border-radius:13px;padding:18px 20px}
+  .card.elev{background:var(--bg-elevated)}
+  ul{list-style:none}
+  li{position:relative;padding:5px 0 5px 20px;font-size:14px;color:var(--text-secondary)}
+  li::before{content:"";position:absolute;left:2px;top:12px;width:6px;height:6px;border-radius:50%;background:var(--accent)}
+  li.win::before{background:var(--you)} li.lose::before{background:var(--they)} li.tie::before{background:var(--tie)}
+  li strong{color:var(--text-primary);font-weight:650}
+  table{width:100%;border-collapse:collapse;font-size:12.5px}
+  .matrix-scroll{overflow-x:auto;border:1px solid var(--border);border-radius:13px}
+  th,td{padding:10px 12px;text-align:left;border-bottom:1px solid var(--border);vertical-align:top;min-width:110px}
+  thead th{background:var(--bg-elevated);position:sticky;top:74px;font-size:11px;text-transform:uppercase;
+    letter-spacing:.03em;color:var(--text-muted);font-weight:700;z-index:5}
+  thead th.you-col{color:var(--you)}
+  tbody th{font-weight:650;color:var(--text-primary);background:var(--bg-elevated);white-space:nowrap;
+    position:sticky;left:0;z-index:4;min-width:132px}
+  td.you-col{background:rgba(16,185,129,.06)}
+  tr:last-child td,tr:last-child th{border-bottom:none}
+  .pill{display:inline-block;padding:2px 8px;border-radius:20px;font-size:10.5px;font-weight:700;letter-spacing:.02em}
+  .p-you{background:rgba(16,185,129,.16);color:#34d399} .p-they{background:rgba(239,68,68,.16);color:#f87171}
+  .p-tie{background:rgba(245,158,11,.16);color:#fbbf24} .p-neu{background:var(--bg-hover);color:var(--text-secondary)}
+  .callout{border-left:3px solid var(--accent);background:var(--accent-soft);padding:13px 16px;border-radius:0 10px 10px 0;font-size:14px;color:var(--text-secondary);margin:4px 0 20px}
+  .callout.warn{border-color:var(--they);background:rgba(239,68,68,.09)}
+  .callout.good{border-color:var(--you);background:rgba(16,185,129,.09)}
+  .tag{display:inline-block;background:var(--bg-hover);border:1px solid var(--border);color:var(--text-secondary);
+    font-size:11.5px;font-weight:600;padding:3px 9px;border-radius:7px;margin:0 5px 5px 0}
+  .prof{display:grid;grid-template-columns:130px 1fr;gap:6px 14px;font-size:13.5px}
+  .prof dt{color:var(--text-muted);font-weight:600} .prof dd{color:var(--text-secondary)}
+  .threat-legend{display:flex;gap:16px;flex-wrap:wrap;margin-bottom:18px;font-size:12.5px;color:var(--text-muted)}
+  .dot{display:inline-block;width:9px;height:9px;border-radius:50%;margin-right:5px;vertical-align:middle}
+  footer{margin-top:40px;padding-top:20px;border-top:1px solid var(--border);color:var(--text-muted);font-size:12px}
+  a{color:var(--accent);text-decoration:none} a:hover{text-decoration:underline}
+  .disclaimer{font-size:11.5px;color:var(--text-muted);font-style:italic;margin-top:8px}
+  .scrollhint{font-size:12px;color:var(--text-muted);margin-bottom:8px}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header class="top">
+    <div class="eyebrow">Competitive Battlecard · Strategic Planning</div>
+    <h1>Global Sports Experiences vs. the International Soccer Tour Market</h1>
+    <p class="meta">Generated <strong>July 2, 2026</strong> · Segment: <strong>International youth soccer team tours & tournament experiences (US/NA outbound)</strong> · 8 competitors profiled: <strong>PIT · inspiresport · WorldStrides · DB Sports Tours · ON Sports USA · SoccerTours.net · United Soccer Academy · Beyond Sports</strong></p>
+  </header>
+
+  <nav class="tabs" id="tabs">
+    <button class="tab active" data-tab="matrix">Comparison Matrix</button>
+    <button class="tab you" data-tab="gse">GSE (You)</button>
+    <button class="tab" data-tab="pit">Premier Intl Tours</button>
+    <button class="tab" data-tab="inspire">inspiresport</button>
+    <button class="tab" data-tab="worldstrides">WorldStrides</button>
+    <button class="tab" data-tab="dbs">DB Sports Tours</button>
+    <button class="tab" data-tab="onsports">ON Sports USA</button>
+    <button class="tab" data-tab="soccertours">SoccerTours.net</button>
+    <button class="tab" data-tab="usa">United Soccer Academy</button>
+    <button class="tab" data-tab="beyond">Beyond Sports</button>
+    <button class="tab" data-tab="strategy">Strategic Takeaways</button>
+  </nav>
+
+  <!-- ===================== MATRIX ===================== -->
+  <section id="matrix" class="tab-content active">
+    <h2>Head-to-Head Comparison</h2>
+    <p class="sub">Where GSE sits against the leading US/North-America outbound soccer-tour operators. (Big European tournaments like Gothia, Donosti, MIC are <em>suppliers/inventory</em>, not competitors.)</p>
+
+    <div class="threat-legend">
+      <span><span class="dot" style="background:var(--you)"></span>GSE advantage</span>
+      <span><span class="dot" style="background:var(--they)"></span>Competitor advantage</span>
+      <span><span class="dot" style="background:var(--tie)"></span>Comparable / mixed</span>
+    </div>
+    <p class="scrollhint">↔ Scroll table horizontally to see all competitors. First column stays fixed.</p>
+
+    <div class="matrix-scroll">
+      <table>
+        <thead>
+          <tr>
+            <th>Factor</th>
+            <th class="you-col">GSE</th>
+            <th>PIT</th>
+            <th>inspiresport</th>
+            <th>WorldStrides</th>
+            <th>DB Sports</th>
+            <th>ON Sports</th>
+            <th>SoccerTours</th>
+            <th>United Soccer Acad.</th>
+            <th>Beyond Sports</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr><th>Core model</th><td class="you-col">Soccer tours + hosted tournaments + experiences</td><td>Soccer tours + tournament entry</td><td>Soccer tours to pro academies</td><td>Educational travel + sports tours</td><td>Custom soccer tours</td><td>Guaranteed tournament entry + logistics</td><td>Soccer tours</td><td>Tours + inbound + camps</td><td>Multi-sport student-athlete tours</td></tr>
+          <tr><th>Destinations</th><td class="you-col">Spain, England, Italy, Morocco, Brazil, N. Ireland</td><td>Europe, S. America, Caribbean, Asia</td><td>England, Spain, Italy, Portugal</td><td>Europe (Spain, UK…)</td><td>Worldwide (Europe-heavy)</td><td>Spain, Dominican Rep.</td><td>Europe, N/S America, Caribbean</td><td>Europe, S. America, Asia</td><td>Costa Rica, Greece, Spain, Italy, Australia</td></tr>
+          <tr><th>Differentiated destinations</th><td class="you-col"><span class="pill p-you">Morocco · Brazil · N. Ireland</span></td><td><span class="pill p-neu">Standard</span></td><td><span class="pill p-neu">Standard</span></td><td><span class="pill p-neu">Standard</span></td><td><span class="pill p-neu">Standard</span></td><td><span class="pill p-neu">Spain + DR</span></td><td><span class="pill p-neu">Standard</span></td><td><span class="pill p-neu">Standard</span></td><td><span class="pill p-tie">LatAm tilt</span></td></tr>
+          <tr><th>Invite-only tournament access</th><td class="you-col"><span class="pill p-you">Surf Cup Int'l, MIC, IDA Easter Cup</span></td><td><span class="pill p-tie">Tournament entry</span></td><td><span class="pill p-tie">Pro-club events</span></td><td><span class="pill p-neu">Some</span></td><td><span class="pill p-neu">Some</span></td><td><span class="pill p-tie">MIC/Donosti guaranteed</span></td><td><span class="pill p-neu">Some</span></td><td><span class="pill p-neu">Some</span></td><td><span class="pill p-neu">Limited</span></td></tr>
+          <tr><th>Pro-club/academy access</th><td class="you-col"><span class="pill p-tie">Via local partners</span></td><td><span class="pill p-neu">Yes</span></td><td><span class="pill p-they">Real Madrid, Inter, Benfica (exclusive)</span></td><td><span class="pill p-neu">Yes</span></td><td><span class="pill p-neu">Yes</span></td><td><span class="pill p-neu">Yes</span></td><td><span class="pill p-neu">Yes</span></td><td><span class="pill p-neu">Yes</span></td><td><span class="pill p-neu">Some</span></td></tr>
+          <tr><th>Scale / tenure</th><td class="you-col"><span class="pill p-tie">Growing</span></td><td>45+ yrs</td><td><span class="pill p-they">~20 yrs, group-backed</span></td><td><span class="pill p-they">Very large (530k+/yr)</span></td><td>2,000+ teams since '10</td><td>Mid</td><td>Since 1988</td><td>30+ yrs</td><td>12,000+ since '10</td></tr>
+          <tr><th>Sanctioning / credentials</th><td class="you-col"><span class="pill p-tie">Surf/IDA network</span></td><td><span class="pill p-they">USYS + US Club + USC</span></td><td><span class="pill p-neu">adidas/pro-club</span></td><td><span class="pill p-neu">Accredited edu-travel</span></td><td><span class="pill p-neu">—</span></td><td><span class="pill p-neu">—</span></td><td><span class="pill p-neu">—</span></td><td><span class="pill p-neu">—</span></td><td><span class="pill p-neu">—</span></td></tr>
+          <tr><th>Distribution / funnel</th><td class="you-col"><span class="pill p-you">Challenger World Tours (exclusive) + Surf/IDA</span></td><td><span class="pill p-neu">Direct/club</span></td><td><span class="pill p-tie">Destination Sport group</span></td><td><span class="pill p-they">Schools/edu channel</span></td><td><span class="pill p-neu">Direct</span></td><td><span class="pill p-neu">Direct</span></td><td><span class="pill p-neu">Direct</span></td><td><span class="pill p-neu">Direct</span></td><td><span class="pill p-neu">Direct</span></td></tr>
+          <tr><th>Threat to GSE</th><td class="you-col">—</td><td><span class="pill p-they">High</span></td><td><span class="pill p-they">High</span></td><td><span class="pill p-they">High</span></td><td><span class="pill p-tie">Med</span></td><td><span class="pill p-tie">Med</span></td><td><span class="pill p-tie">Med</span></td><td><span class="pill p-tie">Med</span></td><td><span class="pill p-neu">Low-Med</span></td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <h2 style="margin-top:30px">Quick Win / Loss Guide</h2>
+    <p class="sub">Fast read on where GSE competes strongly and where it's exposed, by rival.</p>
+    <div class="grid g2">
+      <div class="card"><h3>Premier Intl Tours <span class="pill p-they">High</span></h3><ul>
+        <li class="lose"><strong>Credibility:</strong> 45 yrs + triple sanctioning (USYS, US Club, United Soccer Coaches).</li>
+        <li class="win"><strong>You win on unique destinations + Surf/IDA tournament access + Challenger funnel.</strong></li></ul></div>
+      <div class="card"><h3>inspiresport <span class="pill p-they">High</span></h3><ul>
+        <li class="lose"><strong>Pro-club exclusives</strong> (Real Madrid, Inter, Benfica) + capital + US expansion.</li>
+        <li class="win"><strong>You win on breadth of destinations + hosted tournaments + Challenger distribution.</strong></li></ul></div>
+      <div class="card"><h3>WorldStrides <span class="pill p-they">High</span></h3><ul>
+        <li class="lose"><strong>Scale & capital:</strong> 530k+ travelers/yr, schools distribution channel.</li>
+        <li class="win"><strong>You win on soccer focus, elite tournament access, and specialist experience.</strong></li></ul></div>
+      <div class="card"><h3>ON Sports USA <span class="pill p-tie">Med</span></h3><ul>
+        <li class="tie"><strong>Closest model:</strong> guaranteed elite-tournament entry (MIC/Donosti) + DR angle.</li>
+        <li class="win"><strong>You win on destination breadth + Surf Cup Int'l + Challenger funnel.</strong></li></ul></div>
+      <div class="card"><h3>DB Sports Tours <span class="pill p-tie">Med</span></h3><ul>
+        <li class="tie"><strong>Volume + full customization</strong> across ECNL/club/HS/college.</li>
+        <li class="win"><strong>You win on hosted tournaments + brand network + differentiated trips.</strong></li></ul></div>
+      <div class="card"><h3>SoccerTours.net / United Soccer Academy <span class="pill p-tie">Med</span></h3><ul>
+        <li class="lose"><strong>Long tenure</strong> (1988 / 30+ yrs) and established relationships.</li>
+        <li class="win"><strong>You win on tournament access, destinations, and distribution.</strong></li></ul></div>
+      <div class="card"><h3>Beyond Sports <span class="pill p-neu">Low-Med</span></h3><ul>
+        <li class="tie"><strong>Different lane:</strong> multi-sport, Latin America tilt (Costa Rica).</li>
+        <li class="win"><strong>You win on soccer specialism + European elite access.</strong></li></ul></div>
+      <div class="card elev"><h3>Net position</h3><ul>
+        <li class="tie"><strong>GSE is a differentiated challenger.</strong> Not the biggest (WorldStrides) or most sanctioned (PIT) or most pro-club-connected (inspiresport) — but uniquely armed with rare destinations, invite-only tournament access, and a powerful new distribution channel (Challenger World Tours).</li></ul></div>
+    </div>
+  </section>
+
+  <!-- ===================== GSE ===================== -->
+  <section id="gse" class="tab-content">
+    <h2>Global Sports Experiences — Your Position</h2>
+    <p class="sub">The foundation for the strategic plan.</p>
+    <div class="grid g2">
+      <div class="card"><h3>Profile</h3><dl class="prof">
+        <dt>Model</dt><dd>Outbound youth soccer team tours + hosted/partnered international tournaments + player & fan experiences</dd>
+        <dt>Destinations</dt><dd>Spain, England, Italy, Morocco, Brazil, Northern Ireland, Ireland</dd>
+        <dt>Tournaments</dt><dd>Surf Cup Int'l (Salou/Rome), MIC, Gothia, Donosti, IDA Easter Cup (Valencia)</dd>
+        <dt>Flows</dt><dd>Two-way: US↔UK teams</dd>
+        <dt>Key partners</dt><dd>IDA, Surf Cup, and exclusive fulfillment partner for <strong>Challenger World Tours</strong></dd>
+        <dt>Service</dt><dd>24/7 bilingual tour directors; flexible accommodation (resorts, 4-star, universities)</dd>
+      </dl></div>
+      <div class="card"><h3>Core differentiators</h3><ul>
+        <li class="win"><strong>Rare destinations:</strong> Morocco, Brazil, Northern Ireland — almost no competitor offers these; everyone else clusters on Spain/England/Italy.</li>
+        <li class="win"><strong>Invite-only tournament access</strong> via the Surf Cup / IDA network — hard-to-replicate inventory.</li>
+        <li class="win"><strong>Challenger World Tours distribution</strong> — exclusive fulfillment = a large, built-in lead funnel no rival has.</li>
+        <li class="win"><strong>Two-way US↔UK flow</strong> and a full experiences layer (players + fans), not just logistics.</li>
+      </ul></div>
+    </div>
+    <div class="callout warn" style="margin-top:16px"><strong>Watch-outs:</strong> GSE isn't the scale leader (WorldStrides), the most-sanctioned (PIT holds USYS + US Club + United Soccer Coaches), or the most pro-club-connected (inspiresport's Real Madrid/Inter/Benfica exclusives). Tenure/credentials are the credibility gap to close.</div>
+  </section>
+
+  <!-- ===================== PIT ===================== -->
+  <section id="pit" class="tab-content">
+    <h2>Premier International Tours (PIT)</h2>
+    <p class="sub">The credibility leader. <span class="pill p-they">Threat: High</span></p>
+    <div class="grid g2">
+      <div class="card"><h3>Profile</h3><dl class="prof">
+        <dt>Tenure</dt><dd>45+ years</dd>
+        <dt>Model</dt><dd>Full-service intl youth soccer team tours + tournament entry</dd>
+        <dt>Destinations</dt><dd>Europe, South America, Caribbean, Asia</dd>
+        <dt>Credentials</dt><dd>Sanctioned by US Youth Soccer, US Club Soccer & United Soccer Coaches</dd>
+      </dl>
+      <div style="margin-top:12px"><span class="tag">Triple-sanctioned</span><span class="tag">45+ yrs</span><span class="tag">Direct rival</span></div>
+      </div>
+      <div class="card"><h3>Where they win / you win</h3><ul>
+        <li class="lose"><strong>Sanctioning:</strong> the only NA operator claiming all three major US soccer sanctions — huge trust signal for clubs.</li>
+        <li class="lose"><strong>Longevity & reputation.</strong></li>
+        <li class="win"><strong>Destinations:</strong> GSE's Morocco/Brazil/N. Ireland mix is distinctive.</li>
+        <li class="win"><strong>Tournament access + Challenger funnel</strong> vs. PIT's direct-sell model.</li>
+      </ul></div>
+    </div>
+    <div class="callout"><strong>Strategic read:</strong> PIT wins on trust/credentials. Close the gap by pursuing sanctioning/accreditation and testimonials, and out-differentiate on destinations + guaranteed tournament access.</div>
+  </section>
+
+  <!-- ===================== INSPIRESPORT ===================== -->
+  <section id="inspire" class="tab-content">
+    <h2>inspiresport (Generation adidas International)</h2>
+    <p class="sub">The most strategically threatening rival. <span class="pill p-they">Threat: High</span></p>
+    <div class="grid g2">
+      <div class="card"><h3>Profile</h3><dl class="prof">
+        <dt>Model</dt><dd>Youth soccer (+ multi-sport) team tours to pro academies & tournaments</dd>
+        <dt>Exclusives</dt><dd>adidas partnership; pro-club campuses (Real Madrid, Inter Milan, Benfica)</dd>
+        <dt>Backing</dt><dd>Part of the Destination Sport group</dd>
+        <dt>Markets</dt><dd>UK core; expanding into US/Canada (Atlanta office)</dd>
+        <dt>Sister brand</dt><dd>Next Generation International (doubles US presence)</dd>
+      </dl>
+      <div style="margin-top:12px"><span class="tag">Pro-club exclusives</span><span class="tag">Capital-backed</span><span class="tag">US expansion</span></div>
+      </div>
+      <div class="card"><h3>Where they win / you win</h3><ul>
+        <li class="lose"><strong>Pro-club access:</strong> branded, exclusive academy experiences are a powerful marketing hook.</li>
+        <li class="lose"><strong>Capital + group scale</strong> and aggressive US entry directly into GSE's market.</li>
+        <li class="win"><strong>Destination breadth</strong> (Morocco/Brazil/N. Ireland) and hosted tournaments.</li>
+        <li class="win"><strong>Challenger World Tours distribution</strong> — GSE's built-in US funnel.</li>
+      </ul></div>
+    </div>
+    <div class="callout warn"><strong>Biggest strategic threat.</strong> Same model, deeper pockets, marquee pro-club brands, and entering the US now. Counter with the Challenger funnel, exclusive tournament inventory, and — where possible — your own pro-club/academy relationships.</div>
+  </section>
+
+  <!-- ===================== WORLDSTRIDES ===================== -->
+  <section id="worldstrides" class="tab-content">
+    <h2>WorldStrides Sports (incl. Excel Soccer)</h2>
+    <p class="sub">The scale & capital threat. <span class="pill p-they">Threat: High</span></p>
+    <div class="grid g2">
+      <div class="card"><h3>Profile</h3><dl class="prof">
+        <dt>Model</dt><dd>Educational-travel giant with a dedicated soccer/multi-sport tours division</dd>
+        <dt>Scale</dt><dd>530k+ travelers/yr company-wide; in sports travel since 1998</dd>
+        <dt>Destinations</dt><dd>Europe-heavy (Spain, England, Scotland…)</dd>
+        <dt>Note</dt><dd>Acquired Excel Soccer Tours (excelsoccertours.com → WorldStrides)</dd>
+      </dl>
+      <div style="margin-top:12px"><span class="tag">Very large</span><span class="tag">Schools channel</span><span class="tag">Well-capitalized</span></div>
+      </div>
+      <div class="card"><h3>Where they win / you win</h3><ul>
+        <li class="lose"><strong>Scale, capital, and a schools/education distribution channel</strong> GSE can't match on volume.</li>
+        <li class="win"><strong>Soccer specialism:</strong> GSE is a soccer-first operator vs. a generalist edu-travel machine.</li>
+        <li class="win"><strong>Elite tournament access + distinctive destinations + high-touch service.</strong></li>
+      </ul></div>
+    </div>
+    <div class="callout"><strong>Don't fight on volume.</strong> Win on soccer depth, elite/invite tournament access, and a premium, specialist experience the generalist can't personalize.</div>
+  </section>
+
+  <!-- ===================== DBS ===================== -->
+  <section id="dbs" class="tab-content">
+    <h2>DB Sports Tours (DBS)</h2>
+    <p class="sub">High-volume custom operator. <span class="pill p-tie">Threat: Medium</span></p>
+    <div class="grid g2">
+      <div class="card"><h3>Profile</h3><dl class="prof">
+        <dt>Model</dt><dd>Fully customized international soccer tours</dd>
+        <dt>Scale</dt><dd>2,000+ teams since 2010</dd>
+        <dt>Segments</dt><dd>ECNL, club, high school, college</dd>
+        <dt>Destinations</dt><dd>Worldwide, Europe-heavy</dd>
+      </dl>
+      <div style="margin-top:12px"><span class="tag">Custom tours</span><span class="tag">High volume</span><span class="tag">All levels</span></div>
+      </div>
+      <div class="card"><h3>Where they win / you win</h3><ul>
+        <li class="lose"><strong>Volume + full customization</strong> across every level of the game.</li>
+        <li class="win"><strong>Hosted tournaments + Surf/IDA network + Challenger funnel.</strong></li>
+        <li class="win"><strong>Differentiated destinations</strong> beyond the standard Europe circuit.</li>
+      </ul></div>
+    </div>
+    <div class="callout"><strong>Credible generalist rival.</strong> Compete on inventory you control (tournaments) and distinctive trips rather than a customization arms race.</div>
+  </section>
+
+  <!-- ===================== ON SPORTS ===================== -->
+  <section id="onsports" class="tab-content">
+    <h2>ON Sports USA</h2>
+    <p class="sub">Closest model match. <span class="pill p-tie">Threat: Medium</span></p>
+    <div class="grid g2">
+      <div class="card"><h3>Profile</h3><dl class="prof">
+        <dt>Model</dt><dd>Guaranteed entry into elite tournaments + full tour logistics</dd>
+        <dt>Ages</dt><dd>U10–U18</dd>
+        <dt>Destinations</dt><dd>Spain (MIC, Donosti, MadCup), Dominican Republic</dd>
+      </dl>
+      <div style="margin-top:12px"><span class="tag">Guaranteed entry</span><span class="tag">Elite tournaments</span><span class="tag">Spain + DR</span></div>
+      </div>
+      <div class="card"><h3>Where they win / you win</h3><ul>
+        <li class="tie"><strong>Same core pitch:</strong> guaranteed access to invite-only tournaments + logistics — GSE's exact lane.</li>
+        <li class="win"><strong>Destination breadth</strong> (Morocco/Brazil/N. Ireland/England/Italy) vs. their Spain + DR focus.</li>
+        <li class="win"><strong>Surf Cup Int'l + IDA Easter Cup inventory</strong> and the Challenger funnel.</li>
+      </ul></div>
+    </div>
+    <div class="callout warn"><strong>Most direct model overlap.</strong> Both sell tournament access + logistics. GSE's edge is a broader, harder-to-copy tournament + destination portfolio and distribution.</div>
+  </section>
+
+  <!-- ===================== SOCCERTOURS ===================== -->
+  <section id="soccertours" class="tab-content">
+    <h2>SoccerTours.net</h2>
+    <p class="sub">Long-tenured direct rival. <span class="pill p-tie">Threat: Medium</span></p>
+    <div class="grid g2">
+      <div class="card"><h3>Profile</h3><dl class="prof">
+        <dt>Tenure</dt><dd>Operating since 1988</dd>
+        <dt>Model</dt><dd>Premier soccer tour operator for US/Canadian teams</dd>
+        <dt>Destinations</dt><dd>Europe, North & South America, Caribbean</dd>
+      </dl>
+      <div style="margin-top:12px"><span class="tag">Since 1988</span><span class="tag">US/Canada</span><span class="tag">Established</span></div>
+      </div>
+      <div class="card"><h3>Where they win / you win</h3><ul>
+        <li class="lose"><strong>Longevity & relationships</strong> — one of the oldest names in the space.</li>
+        <li class="win"><strong>Tournament access, distinctive destinations, and Challenger distribution.</strong></li>
+        <li class="win"><strong>Experiences layer</strong> (players + fans) beyond standard tours.</li>
+      </ul></div>
+    </div>
+    <div class="callout"><strong>Established but conventional.</strong> Compete on modern distribution + differentiated inventory vs. their long-standing but standard offering.</div>
+  </section>
+
+  <!-- ===================== UNITED SOCCER ACADEMY ===================== -->
+  <section id="usa" class="tab-content">
+    <h2>United Soccer Academy</h2>
+    <p class="sub">Tours + inbound + camps. <span class="pill p-tie">Threat: Medium</span></p>
+    <div class="grid g2">
+      <div class="card"><h3>Profile</h3><dl class="prof">
+        <dt>Tenure</dt><dd>30+ years</dd>
+        <dt>Model</dt><dd>Outbound tours + inbound-to-US programs + camps</dd>
+        <dt>Destinations</dt><dd>Europe, South America, Asia</dd>
+      </dl>
+      <div style="margin-top:12px"><span class="tag">30+ yrs</span><span class="tag">Tours + camps</span><span class="tag">Two-way</span></div>
+      </div>
+      <div class="card"><h3>Where they win / you win</h3><ul>
+        <li class="tie"><strong>Diversified</strong> (tours + inbound + camps) and long-established.</li>
+        <li class="win"><strong>Elite tournament access + Surf/IDA brand + Challenger funnel.</strong></li>
+        <li class="win"><strong>Destination breadth</strong> including Morocco/Brazil/N. Ireland.</li>
+      </ul></div>
+    </div>
+    <div class="callout"><strong>Diversified but not tournament-led.</strong> GSE's controlled tournament inventory and distribution are the differentiators.</div>
+  </section>
+
+  <!-- ===================== BEYOND SPORTS ===================== -->
+  <section id="beyond" class="tab-content">
+    <h2>Beyond Sports Tours</h2>
+    <p class="sub">Adjacent — different destination lane. <span class="pill p-neu">Threat: Low-Med</span></p>
+    <div class="grid g2">
+      <div class="card"><h3>Profile</h3><dl class="prof">
+        <dt>Model</dt><dd>International student-athlete tours; multi-sport incl. soccer</dd>
+        <dt>Scale</dt><dd>12,000+ travelers since 2010</dd>
+        <dt>Destinations</dt><dd>Costa Rica, Greece, Spain, Italy, Australia</dd>
+      </dl>
+      <div style="margin-top:12px"><span class="tag">Multi-sport</span><span class="tag">LatAm tilt</span><span class="tag">Student-athlete</span></div>
+      </div>
+      <div class="card"><h3>Where they win / you win</h3><ul>
+        <li class="tie"><strong>Different lane:</strong> multi-sport and Latin America (Costa Rica) focus.</li>
+        <li class="win"><strong>Soccer specialism + European elite tournament access.</strong></li>
+        <li class="win"><strong>Pro-pathway positioning</strong> vs. their broader student-travel angle.</li>
+      </ul></div>
+    </div>
+    <div class="callout"><strong>Overlaps only partially.</strong> Watch on price-sensitive Latin America trips; otherwise a different value proposition.</div>
+  </section>
+
+  <!-- ===================== STRATEGY ===================== -->
+  <section id="strategy" class="tab-content">
+    <h2>Strategic Takeaways</h2>
+    <p class="sub">Reading for the planning deck — where to defend, where to press.</p>
+
+    <div class="card elev" style="margin-bottom:16px"><h3>The field, tiered by threat</h3><ul>
+      <li class="lose"><strong>High:</strong> inspiresport (pro-club + capital + US entry), WorldStrides (scale + schools channel), PIT (sanctioning + tenure).</li>
+      <li class="tie"><strong>Medium:</strong> ON Sports (closest model), DB Sports (volume/custom), SoccerTours.net &amp; United Soccer Academy (long-tenured).</li>
+      <li class="win"><strong>Low-Med:</strong> Beyond Sports (multi-sport, LatAm lane).</li>
+    </ul></div>
+
+    <div class="grid g2">
+      <div class="card elev"><h3 style="color:var(--you)">Opportunities to press</h3><ul>
+        <li class="win"><strong>Own the rare destinations.</strong> Morocco, Brazil, Northern Ireland — market them as signature trips no one else runs.</li>
+        <li class="win"><strong>Weaponize the Challenger World Tours deal.</strong> Exclusive fulfillment = a large, recurring lead funnel. Build the conversion engine around it before rivals lock up their own channels.</li>
+        <li class="win"><strong>Lock in exclusive tournament inventory.</strong> Surf Cup Int'l + IDA Easter Cup access is the moat — deepen and make it contractual/exclusive.</li>
+        <li class="win"><strong>Sell the experience layer</strong> (players + fans, 24/7 bilingual directors) as premium vs. commodity logistics.</li>
+      </ul></div>
+      <div class="card elev"><h3 style="color:var(--they)">Threats to defend</h3><ul>
+        <li class="lose"><strong>inspiresport's US entry</strong> with pro-club brands + capital — the fastest-moving threat.</li>
+        <li class="lose"><strong>Credibility gap vs. PIT</strong> — no triple-sanction yet.</li>
+        <li class="lose"><strong>WorldStrides' scale + schools channel.</strong></li>
+        <li class="lose"><strong>Tournaments disintermediating:</strong> Donosti (in-house travel partner) and IberCup (ECNL-US tie-up, now a US event) may pull demand operators currently supply.</li>
+      </ul></div>
+    </div>
+
+    <div class="card" style="margin-top:16px"><h3>Recommended next actions</h3><ul>
+      <li class="win"><strong>Build the Challenger World Tours conversion funnel</strong> — dedicated landing pages, lead routing, and packages. This is your biggest asymmetric advantage; treat it as a growth engine, not a side deal.</li>
+      <li class="win"><strong>Pursue sanctioning/accreditation</strong> (US Youth Soccer / US Club / United Soccer Coaches) to neutralize PIT's trust edge.</li>
+      <li class="win"><strong>Secure exclusive/priority tournament access</strong> agreements (Surf Cup Int'l, MIC, IDA Easter Cup) before rivals or organizers go direct.</li>
+      <li class="win"><strong>Develop 1–2 pro-club/academy relationships</strong> to blunt inspiresport's marquee hook.</li>
+      <li class="win"><strong>Package the signature destinations</strong> (Morocco/Brazil/N. Ireland) as flagship, marketing-led itineraries.</li>
+      <li class="win"><strong>Refresh this battlecard quarterly</strong> — inspiresport's US rollout and tournament disintermediation are moving fast.</li>
+    </ul></div>
+
+    <div class="callout warn" style="margin-top:16px"><strong>Data caveat:</strong> Compiled from public sources (July 2026). Tour operators rarely publish pricing or volumes, so scale/tenure figures are directional and partly from company claims. Verify sanctioning and partnership details before external use.</div>
+  </section>
+
+  <footer>
+    <strong>Sources:</strong>
+    <a href="https://globalsportsexperiences.com/">Global Sports Experiences</a> ·
+    <a href="https://premierinternationaltours.com/">Premier International Tours</a> ·
+    <a href="https://inspiresportglobal.com/">inspiresport</a> ·
+    <a href="https://worldstrides.com/en-us/teachers/programs-and-tours/sports/soccer">WorldStrides Sports</a> ·
+    <a href="https://dbsportstours.com/">DB Sports Tours</a> ·
+    <a href="https://onsportsusa.org/">ON Sports USA</a> ·
+    <a href="https://soccertours.net/">SoccerTours.net</a> ·
+    <a href="https://unitedsocceracademy.org/">United Soccer Academy</a> ·
+    <a href="https://beyondsportstours.com/">Beyond Sports Tours</a> ·
+    <a href="https://challengersports.com/challenger-sports-teams-up-with-gse/">Challenger × GSE partnership</a>
+    <div class="disclaimer">Compiled from public web sources on July 2, 2026 for internal strategic planning. Refresh quarterly.</div>
+  </footer>
+</div>
+
+<script>
+  const tabs=document.querySelectorAll('.tab');
+  const sections=document.querySelectorAll('.tab-content');
+  tabs.forEach(t=>t.addEventListener('click',()=>{
+    tabs.forEach(x=>x.classList.remove('active'));
+    sections.forEach(s=>s.classList.remove('active'));
+    t.classList.add('active');
+    document.getElementById(t.dataset.tab).classList.add('active');
+    window.scrollTo({top:0,behavior:'smooth'});
+  }));
+</script>
+</body>
+</html>
